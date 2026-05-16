@@ -24,7 +24,10 @@ const SUPER_CYCLE_MIN = (BLOCKS_PER_SUPER_CYCLE - 1) * STANDARD_BLOCK_MIN + LONG
  * }}
  */
 export function getCycleState(epochMs, nowMs) {
-  const elapsedMs = nowMs - epochMs;
+  // Clamp negative elapsed time to zero (returns cycle 1 minute 0).
+  // Without this guard, pre-epoch calls produce nonsensical negative
+  // minuteWithinPhase / superCycleNumber values.
+  const elapsedMs = Math.max(0, nowMs - epochMs);
   const superCycleNumber = Math.floor(elapsedMs / (SUPER_CYCLE_MIN * 60 * 1000));
   const minIntoSuperCycle = (elapsedMs / 60000) % SUPER_CYCLE_MIN;
 
@@ -65,6 +68,8 @@ export function getCycleState(epochMs, nowMs) {
     cumulative += breakDuration;
   }
 
-  // Unreachable
-  throw new Error('cycle state machine error');
+  // Unreachable — the loop above must return for any valid minIntoSuperCycle ∈ [0, SUPER_CYCLE_MIN).
+  throw new Error(
+    `getCycleState: minIntoSuperCycle=${minIntoSuperCycle} exceeded SUPER_CYCLE_MIN=${SUPER_CYCLE_MIN} (unreachable)`
+  );
 }

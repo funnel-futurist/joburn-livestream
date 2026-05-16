@@ -64,4 +64,14 @@ describe('getCycleState', () => {
     expect(result.minuteWithinPhase).toBeCloseTo(12.5, 1);
     expect(result.secondsRemaining).toBe((50 - 12.5) * 60);
   });
+
+  it('clamps pre-epoch times to cycle 1 minute 0', () => {
+    const epoch = 1747353600000;
+    const result = getCycleState(epoch, epoch - 1000);
+    expect(result.phase).toBe('FOCUS');
+    expect(result.cycleIndex).toBe(1);
+    expect(result.minuteWithinPhase).toBe(0);
+    expect(result.minutesRemaining).toBe(50);
+    expect(result.superCycleNumber).toBe(0);
+  });
 });
