@@ -1,0 +1,18 @@
+[Unit]
+Description=Forge FM YouTube stream (xvfb + chromium + ffmpeg)
+After=network.target forge-fm-app.service
+Requires=forge-fm-app.service
+
+[Service]
+Type=simple
+User=forgefm
+WorkingDirectory=/opt/forge-fm/app
+EnvironmentFile=/opt/forge-fm/app/.env
+ExecStart=/opt/forge-fm/app/infra/start-stream.sh
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
