@@ -7,9 +7,10 @@ const BREAK_MIN = 10;
 const LONG_BREAK_MIN = 30;
 const BLOCKS_PER_SUPER_CYCLE = 4;
 
+// Classic Pomodoro: 4 cycles of (FOCUS + short BREAK), THEN one LONG_BREAK,
+// then the super-cycle restarts. Total = 4*(50+10) + 30 = 270 min = 4h 30m.
 const STANDARD_BLOCK_MIN = FOCUS_MIN + BREAK_MIN; // 60
-const LONG_BLOCK_MIN = FOCUS_MIN + LONG_BREAK_MIN; // 80
-const SUPER_CYCLE_MIN = (BLOCKS_PER_SUPER_CYCLE - 1) * STANDARD_BLOCK_MIN + LONG_BLOCK_MIN; // 260
+const SUPER_CYCLE_MIN = BLOCKS_PER_SUPER_CYCLE * STANDARD_BLOCK_MIN + LONG_BREAK_MIN; // 270
 
 /**
  * @param {number} epochMs - Reference epoch (any absolute time; cycle is computed relative to it).
@@ -32,12 +33,9 @@ export function getCycleState(epochMs, nowMs) {
   const minIntoSuperCycle = (elapsedMs / 60000) % SUPER_CYCLE_MIN;
 
   let cumulative = 0;
+  // Four FOCUS+BREAK blocks (each 60 min).
   for (let cycleIndex = 1; cycleIndex <= BLOCKS_PER_SUPER_CYCLE; cycleIndex++) {
-    const isLast = cycleIndex === BLOCKS_PER_SUPER_CYCLE;
-    const breakDuration = isLast ? LONG_BREAK_MIN : BREAK_MIN;
-    const breakPhase = isLast ? 'LONG_BREAK' : 'BREAK';
-
-    // FOCUS portion
+    // FOCUS portion (50 min)
     if (minIntoSuperCycle < cumulative + FOCUS_MIN) {
       const minuteWithinPhase = minIntoSuperCycle - cumulative;
       const minutesRemaining = FOCUS_MIN - minuteWithinPhase;
@@ -52,12 +50,12 @@ export function getCycleState(epochMs, nowMs) {
     }
     cumulative += FOCUS_MIN;
 
-    // BREAK portion
-    if (minIntoSuperCycle < cumulative + breakDuration) {
+    // BREAK portion (always 10 min — all 4 cycles get short breaks)
+    if (minIntoSuperCycle < cumulative + BREAK_MIN) {
       const minuteWithinPhase = minIntoSuperCycle - cumulative;
-      const minutesRemaining = breakDuration - minuteWithinPhase;
+      const minutesRemaining = BREAK_MIN - minuteWithinPhase;
       return {
-        phase: breakPhase,
+        phase: 'BREAK',
         cycleIndex,
         minuteWithinPhase,
         minutesRemaining: Math.ceil(minutesRemaining),
@@ -65,10 +63,25 @@ export function getCycleState(epochMs, nowMs) {
         superCycleNumber
       };
     }
-    cumulative += breakDuration;
+    cumulative += BREAK_MIN;
   }
 
-  // Unreachable — the loop above must return for any valid minIntoSuperCycle ∈ [0, SUPER_CYCLE_MIN).
+  // LONG_BREAK comes AFTER all 4 blocks finish. cycleIndex stays at 4
+  // (since it's the rest after the 4th cycle, not a separate cycle).
+  if (minIntoSuperCycle < cumulative + LONG_BREAK_MIN) {
+    const minuteWithinPhase = minIntoSuperCycle - cumulative;
+    const minutesRemaining = LONG_BREAK_MIN - minuteWithinPhase;
+    return {
+      phase: 'LONG_BREAK',
+      cycleIndex: BLOCKS_PER_SUPER_CYCLE,
+      minuteWithinPhase,
+      minutesRemaining: Math.ceil(minutesRemaining),
+      secondsRemaining: minutesRemaining * 60,
+      superCycleNumber
+    };
+  }
+
+  // Unreachable — minIntoSuperCycle ∈ [0, SUPER_CYCLE_MIN) is exhaustively covered above.
   throw new Error(
     `getCycleState: minIntoSuperCycle=${minIntoSuperCycle} exceeded SUPER_CYCLE_MIN=${SUPER_CYCLE_MIN} (unreachable)`
   );
