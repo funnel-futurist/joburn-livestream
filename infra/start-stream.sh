@@ -19,9 +19,9 @@ DISPLAY_NUM=:99
 RESOLUTION="1920x1080"
 FPS=30
 
-# Cleanup any existing xvfb / chromium
+# Cleanup any existing xvfb / chrome
 pkill -f "Xvfb $DISPLAY_NUM" 2>/dev/null || true
-pkill -f "chromium" 2>/dev/null || true
+pkill -f "google-chrome" 2>/dev/null || true
 sleep 1
 
 # Start xvfb
@@ -29,15 +29,15 @@ Xvfb $DISPLAY_NUM -screen 0 ${RESOLUTION}x24 -nolisten tcp &
 XVFB_PID=$!
 sleep 2
 
-# Start chromium pointed at the local app
-DISPLAY=$DISPLAY_NUM chromium \
+# Start google-chrome (real .deb, not snap — Ubuntu 24.04 snap chromium fails under xvfb+sudo cgroup)
+DISPLAY=$DISPLAY_NUM google-chrome-stable \
   --kiosk \
   --no-sandbox \
   --disable-gpu \
   --disable-software-rasterizer \
   --autoplay-policy=no-user-gesture-required \
   --window-size=1920,1080 \
-  --user-data-dir=/tmp/chromium-forge \
+  --user-data-dir=/tmp/chrome-forge \
   "$LOCAL_URL" &
 CHROMIUM_PID=$!
 sleep 5
