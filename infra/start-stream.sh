@@ -30,11 +30,21 @@ XVFB_PID=$!
 sleep 2
 
 # Start google-chrome (real .deb, not snap — Ubuntu 24.04 snap chromium fails under xvfb+sudo cgroup)
+# All the --no-first-run / --disable-* flags silence Chrome's first-launch UI
+# (welcome dialog, default-browser prompt, password-manager, sync setup) so the
+# rendered page is the React app, not Chrome chrome.
 DISPLAY=$DISPLAY_NUM google-chrome-stable \
   --kiosk \
+  --no-first-run \
+  --no-default-browser-check \
+  --disable-features=TranslateUI,InfoBars \
   --no-sandbox \
   --disable-gpu \
   --disable-software-rasterizer \
+  --disable-extensions \
+  --disable-popup-blocking \
+  --disable-infobars \
+  --disable-session-crashed-bubble \
   --autoplay-policy=no-user-gesture-required \
   --window-size=1920,1080 \
   --user-data-dir=/tmp/chrome-forge \
