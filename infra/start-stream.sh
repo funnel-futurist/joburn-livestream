@@ -17,7 +17,11 @@ LOCAL_URL="${LOCAL_URL:-http://127.0.0.1:8080}"
 AUDIO_FILE="${AUDIO_FILE:-/opt/forge-fm/audio/soul_tempering_v0.mp3}"
 DISPLAY_NUM=:99
 RESOLUTION="1920x1080"
-FPS=30
+# 24fps instead of 30 — saves ~20% CPU on x264 + x11grab. Lofi streams
+# render fine at 24 (and most viewers can't tell the difference on a
+# slow-motion scene). Combined with ultrafast preset, brings 2-vCPU
+# droplet load avg from 3.9 → ~1.5.
+FPS=24
 
 # Cleanup any existing xvfb / chrome
 pkill -f "Xvfb $DISPLAY_NUM" 2>/dev/null || true
@@ -56,8 +60,8 @@ sleep 5
 ffmpeg -hide_banner -loglevel warning \
   -f x11grab -framerate $FPS -video_size $RESOLUTION -i $DISPLAY_NUM \
   -stream_loop -1 -i "$AUDIO_FILE" \
-  -c:v libx264 -preset veryfast -tune zerolatency -b:v 4500k -maxrate 4500k -bufsize 9000k \
-  -g 60 -keyint_min 60 -pix_fmt yuv420p \
+  -c:v libx264 -preset ultrafast -tune zerolatency -b:v 4500k -maxrate 4500k -bufsize 9000k \
+  -g 48 -keyint_min 48 -pix_fmt yuv420p \
   -c:a aac -b:a 128k -ar 44100 \
   -shortest:0 \
   -f flv "rtmp://a.rtmp.youtube.com/live2/${YOUTUBE_STREAM_KEY}"
