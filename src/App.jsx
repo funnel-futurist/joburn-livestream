@@ -1,6 +1,7 @@
 import React from 'react';
 import ForgeScene from './scene/ForgeScene.jsx';
 import PomodoroTimer from './overlays/PomodoroTimer.jsx';
+import QuoteOverlay from './overlays/QuoteOverlay.jsx';
 
 export default function App() {
   return (
@@ -8,6 +9,7 @@ export default function App() {
       <div className="relative w-full max-w-[1920px] aspect-video bg-black shadow-2xl ring-1 ring-white/5 overflow-hidden">
         <ForgeScene />
         <PomodoroTimer />
+        <QuoteOverlay />
       </div>
     </div>
   );
