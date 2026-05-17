@@ -20,12 +20,45 @@ export default function QuoteOverlay() {
     cycle.superCycleNumber
   ]);
 
+  // Diegetic positioning — the wooden quote plaque in the scene art sits roughly
+  // between the window and the hearth (upper-right of the room). Position the
+  // text overlay to land ON THE PLAQUE so it reads as hand-painted on the wood,
+  // not floating UI.
+  //
+  // Plaque region (% of scene canvas, calibrated to ChatGPT scene set):
+  //   left:   59% → 84%   (width ~25%)
+  //   top:    14% → 28%   (height ~14%)
+  //
+  // Styled: dark sepia ink on aged wood, serif italic, slight blur to
+  // integrate with the wood texture.
   return (
-    <div className="absolute left-1/2 -translate-x-1/2 bottom-36 max-w-3xl text-center pointer-events-none px-6">
-      <p className="text-white/85 text-2xl leading-relaxed font-serif italic drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">
+    <div
+      className="absolute pointer-events-none flex flex-col items-center justify-center text-center px-4"
+      style={{
+        left: '59%',
+        top: '14%',
+        width: '25%',
+        height: '14%',
+      }}
+    >
+      <p
+        className="font-serif italic leading-tight"
+        style={{
+          color: 'rgba(60, 35, 15, 0.88)',
+          fontSize: 'clamp(0.7rem, 1.1vw, 1.05rem)',
+          textShadow: '0 1px 0 rgba(255, 230, 180, 0.25)',
+          filter: 'contrast(1.05)',
+        }}
+      >
         &ldquo;{quote.text}&rdquo;
       </p>
-      <p className="text-amber-300/60 text-sm mt-3 tracking-widest font-mono">
+      <p
+        className="font-serif italic mt-1"
+        style={{
+          color: 'rgba(80, 50, 20, 0.7)',
+          fontSize: 'clamp(0.55rem, 0.75vw, 0.75rem)',
+        }}
+      >
         — {quote.author}
       </p>
     </div>
