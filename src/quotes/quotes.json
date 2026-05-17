@@ -1,4 +1,6 @@
 [
+  { "register": "PRIMING", "text": "The sword is the self. How much work are you willing to put into removing its impurities?", "author": "Joburn" },
+  { "register": "DEEP_WORK", "text": "The sword is the self. Every strike of the hammer is another impurity removed.", "author": "Joburn" },
   { "register": "PRIMING", "text": "The unexamined life is not worth living.", "author": "Socrates" },
   { "register": "PRIMING", "text": "We are what we repeatedly do. Excellence, then, is not an act, but a habit.", "author": "Aristotle" },
   { "register": "PRIMING", "text": "Begin to be now what you will be hereafter.", "author": "William James" },

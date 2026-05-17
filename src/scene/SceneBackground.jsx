@@ -2,11 +2,17 @@
 // Picks the right background image based on cycle phase + cycleIndex.
 // Replaces the SVG ForgeScene for v1.0.
 //
-// Scene map:
-//   FOCUS cycle 1 + 3 → ANVIL (hammering mode)
-//   FOCUS cycle 2 + 4 → LAPTOP (founder mode)
-//   BREAK any         → MEDITATING (cross-legged, capybara meditating in parallel)
-//   LONG_BREAK        → BRB · TOUCHING GRASS (empty room, capybara solo, door cracked)
+// Scene map (locked 2026-05-17 per operator):
+//   FOCUS (all 4 cycles)  → LAPTOP (this is the default work mode — founders at keyboards)
+//   BREAK on odd cycle    → MEDITATING (cross-legged, capybara meditating in parallel)
+//   BREAK on even cycle   → ANVIL (working on the self — the sword is the self, removing impurities)
+//   LONG_BREAK            → BRB · TOUCHING GRASS (empty room, door cracked open, capybara solo)
+//
+// Rationale: hammer/anvil is the BRAND MOTIF (sword = self, work = identity work), but it's
+// NOT what founders do all day. Founders are at laptops. The blacksmith's identity work
+// happens during their breaks. This makes the scene rotation feel like a real day:
+// 50 min focused work → 10 min identity work (alternating mind: meditate, body: forge) →
+// repeat 4× → 30 min walk outside.
 //
 // All images share the same room layout (ChatGPT "Edit this image" workflow
 // preserved pixel positions across all 4 character variants + the empty base).
@@ -19,10 +25,10 @@ import { useCycle } from '../cycle/useCycle.js';
 
 function pickScene({ phase, cycleIndex }) {
   if (phase === 'LONG_BREAK') return '/scenes/scene_brb.png';
-  if (phase === 'BREAK') return '/scenes/scene_meditating.png';
-  // FOCUS: alternate anvil ↔ laptop on odd/even cycle to break repetition
-  if (phase === 'FOCUS') {
-    return (cycleIndex % 2 === 1) ? '/scenes/scene_anvil.png' : '/scenes/scene_laptop.png';
+  if (phase === 'FOCUS') return '/scenes/scene_laptop.png';
+  if (phase === 'BREAK') {
+    // Odd cycles: meditate (mind). Even cycles: hammer the sword (body / self).
+    return (cycleIndex % 2 === 1) ? '/scenes/scene_meditating.png' : '/scenes/scene_anvil.png';
   }
   return '/scenes/scene_base.png';
 }
