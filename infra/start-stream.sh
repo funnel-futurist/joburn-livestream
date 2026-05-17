@@ -56,10 +56,24 @@ DISPLAY=$DISPLAY_NUM google-chrome-stable \
 CHROMIUM_PID=$!
 sleep 5
 
-# Stream: capture xvfb display, loop audio file, mux, push to YouTube RTMP
+# Compute wall-clock-aligned audio offset so the 260-min super-cycle audio
+# starts at the SAME position as the visual cycle. The React app's useCycle
+# hook computes phase from epoch 2024-01-01 00:00 UTC; we mirror that here.
+EPOCH_UNIX=1704067200          # 2024-01-01 00:00:00 UTC (matches src/cycle/useCycle.js)
+SUPER_CYCLE_SEC=15600          # 260 min — matches state machine + audio mix
+NOW_UNIX=$(date -u +%s)
+ELAPSED=$(( NOW_UNIX - EPOCH_UNIX ))
+AUDIO_OFFSET_SEC=$(( ELAPSED % SUPER_CYCLE_SEC ))
+echo "Visual cycle position: ${AUDIO_OFFSET_SEC}s into super-cycle — aligning audio to match" >&2
+
+# Stream: capture xvfb display, loop audio file aligned to visual cycle, mux, push to YouTube RTMP
+# -ss before -i seeks the audio file before the first stream_loop iteration so it
+# starts at the wall-clock-aligned position. Subsequent loop iterations naturally
+# play from t=0; since the audio mix structure equals the visual cycle structure
+# (both 260 min in the same phase order), they stay locked together forever.
 ffmpeg -hide_banner -loglevel warning \
   -f x11grab -framerate $FPS -video_size $RESOLUTION -i $DISPLAY_NUM \
-  -stream_loop -1 -i "$AUDIO_FILE" \
+  -stream_loop -1 -ss "$AUDIO_OFFSET_SEC" -i "$AUDIO_FILE" \
   -c:v libx264 -preset ultrafast -tune zerolatency -b:v 4500k -maxrate 4500k -bufsize 9000k \
   -g 48 -keyint_min 48 -pix_fmt yuv420p \
   -c:a aac -b:a 128k -ar 44100 \
